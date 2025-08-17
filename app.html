@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game & App Store</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(180deg, #0a0f1c, #000);
+      color: #fff;
+    }
+
+    header {
+      background: linear-gradient(90deg, #0a1a3d, #000);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #1e90ff;
+      font-weight: bold;
+    }
+
+    .search-box {
+      margin: 20px auto;
+      width: 90%;
+      max-width: 500px;
+      display: flex;
+      background: #111827;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.6);
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      background: #111827;
+      color: #fff;
+    }
+
+    .search-box button {
+      background: #1e90ff;
+      border: none;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #fff;
+      transition: background 0.3s;
+    }
+
+    .search-box button:hover {
+      background: #006ad1;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 25px;
+      padding: 30px;
+    }
+
+    .card {
+      background: #111827;
+      border-radius: 15px;
+      text-align: center;
+      padding: 20px 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 25px rgba(30,144,255,0.4);
+    }
+
+    .card img {
+      width: 80px;
+      height: 80px;
+      border-radius: 20%;
+      margin-bottom: 10px;
+      transition: filter 0.3s;
+    }
+
+    .card h3 {
+      margin: 10px 0 5px;
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .card p {
+      font-size: 0.85rem;
+      color: #bbb;
+      display: none;
+      margin: 10px 0;
+    }
+
+    .download-btn {
+      display: none;
+      padding: 10px 18px;
+      background: #1e90ff;
+      color: #fff;
+      border-radius: 8px;
+      font-weight: bold;
+      text-decoration: none;
+      transition: background 0.3s ease;
+    }
+
+    .download-btn:hover {
+      background: #006ad1;
+    }
+
+    /* Expanded view */
+    .card.active img {
+      filter: blur(2px) brightness(0.6);
+    }
+
+    .card.active p,
+    .card.active .download-btn {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Game & App Store</h1>
+  </header>
+
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Search games & apps...">
+    <button>Search</button>
+  </div>
+
+  <section class="container">
+    <div class="card">
+      <img src="game1.jpg" alt="Game 1">
+      <h3>Adventure Quest</h3>
+      <p>An epic adventure game full of challenges and mysteries.</p>
+      <a href="game1.apk" class="download-btn" download>Download</a>
+    </div>
+
+    <div class="card">
+      <img src="game2.jpg" alt="Game 2">
+      <h3>Speed Racer</h3>
+      <p>A high-speed racing game with modern graphics and physics.</p>
+      <a href="game2.apk" class="download-btn" download>Download</a>
+    </div>
+
+    <div class="card">
+      <img src="app1.jpg" alt="App 1">
+      <h3>Smart Note</h3>
+      <p>A powerful note-taking app to organize your daily life.</p>
+      <a href="app1.apk" class="download-btn" download>Download</a>
+    </div>
+  </section>
+
+  <script>
+    const cards = document.querySelectorAll('.card');
+
+    document.addEventListener('click', (e) => {
+      let clickedCard = e.target.closest('.card');
+
+      cards.forEach(card => {
+        if (card === clickedCard) {
+          card.classList.toggle('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+    });
+
+    // Search filter
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      cards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        if (title.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
