@@ -1,97 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Multiplayer Tic Tac Toe</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tic Tac Toe — Multiplayer</title>
   <style>
+    :root {
+      --bg:#0f1115; --card:#151822; --muted:#9aa4b2; --pri:#6c8cff; --pri-2:#8ea3ff; --accent:#00d0b3; --danger:#ff6b6b;
+    }
+    * { box-sizing: border-box; }
     body {
-      background-color: #121212;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      margin: 0; min-height: 100vh; background: radial-gradient(1200px 800px at 70% -10%, #1a1f2b 0%, var(--bg) 45%);
+      color: #e9eef7; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      display: grid; place-items: center; padding: 20px;
     }
-
-    h1 {
-      margin-bottom: 10px;
+    .app { width: 100%; max-width: 700px; display: grid; gap: 16px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    h1 { font-size: clamp(20px, 4vw, 28px); margin: 0; letter-spacing: .3px; }
+    .badge { font-size: 12px; color: var(--accent); background: #0b1614; border:1px solid #153a35; padding:6px 10px; border-radius: 999px; }
+    .card { background: linear-gradient(180deg, #181c28 0%, var(--card) 100%); border:1px solid #23293a; border-radius: 16px; padding: 14px; }
+    .controls { display:grid; gap: 10px; }
+    .row { display:flex; flex-wrap: wrap; gap: 8px; }
+    input[type="text"] {
+      flex:1 1 160px; background:#0f1422; color:#eaf1ff; border:1px solid #2b3754; outline:none;
+      padding: 10px 12px; border-radius: 10px; min-width: 0;
     }
-
-    #roomControls {
-      margin-bottom: 20px;
+    .btn {
+      background: var(--pri); color: white; border: 1px solid #4159d9; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
+      transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
     }
-
-    input, button {
-      padding: 8px;
-      border: none;
-      border-radius: 5px;
-      margin: 5px;
+    .btn:hover { background: var(--pri-2); }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost { background: #0f1422; color:#d6def8; border:1px solid #2b3754; }
+    .btn.warn { background: #2a1518; border-color:#5e2027; color:#ffc6c6; }
+    .grid {
+      display:grid; grid-template-columns: repeat(3, minmax(86px, 1fr)); gap: 10px; justify-items: stretch;
     }
-
-    input {
-      background: #222;
-      color: #fff;
-    }
-
-    button {
-      background: #3f51b5;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #5c6bc0;
-    }
-
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-template-rows: repeat(3, 100px);
-      gap: 5px;
-    }
-
     .cell {
-      width: 100px;
-      height: 100px;
-      background: #1e1e1e;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2em;
-      cursor: pointer;
-      border-radius: 10px;
-      transition: background 0.3s;
+      aspect-ratio: 1/1; background: #0e1320; border:1px solid #27314a; border-radius: 16px;
+      display:grid; place-items:center; font-size: clamp(36px, 9vw, 56px); font-weight: 800; cursor: pointer;
+      user-select: none; transition: background .2s ease, transform .06s ease, border-color .2s ease;
     }
-
-    .cell:hover {
-      background: #333;
+    .cell:hover { background:#121a2e; border-color:#314065; }
+    .cell:active { transform: translateY(1px); }
+    .hud { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; color:var(--muted); }
+    .status { font-weight:700; color:#eaf1ff; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .roomline { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .pill {
+      background:#0d1220; border:1px solid #2b3754; padding:8px 10px; border-radius:999px; color:#cfe0ff;
     }
-
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-    }
+    .x { color:#7dcfff; text-shadow:0 0 10px rgba(125,207,255,.2); }
+    .o { color:#a6e3a1; text-shadow:0 0 10px rgba(166,227,161,.2); }
+    .footer { display:flex; gap:8px; flex-wrap:wrap; }
+    .muted { color: var(--muted); font-size: 12px; }
+    @media (min-width:640px){ .grid{ grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
   </style>
 </head>
 <body>
-  <h1>Multiplayer Tic Tac Toe</h1>
+  <div class="app">
+    <header>
+      <h1>Multiplayer Tic Tac Toe</h1>
+      <span class="badge">Firebase Realtime</span>
+    </header>
 
-  <div id="roomControls">
-    <input id="roomCode" type="text" placeholder="Enter room code">
-    <button id="createRoom">Create Room</button>
-    <button id="joinRoom">Join Room</button>
+    <section class="card controls">
+      <div class="row">
+        <input id="roomInput" type="text" placeholder="Enter room code (e.g. A7K3Q)" maxlength="8" />
+        <button id="createBtn" class="btn">Create Room</button>
+        <button id="joinBtn" class="btn ghost">Join Room</button>
+      </div>
+
+      <div class="row roomline">
+        <span id="roomDisplay" class="pill mono">No room</span>
+        <button id="copyBtn" class="btn ghost">Copy Code</button>
+        <button id="shareBtn" class="btn ghost">Share Link</button>
+        <button id="leaveBtn" class="btn warn">Leave Room</button>
+      </div>
+      <div class="muted">Tip: Send the link to your friend. It includes the room code automatically.</div>
+    </section>
+
+    <section class="card">
+      <div class="hud">
+        <div class="status" id="status">Create or join a room</div>
+        <div class="pill">You: <span id="youAre" class="mono">-</span></div>
+      </div>
+      <div id="board" class="grid" aria-label="Tic Tac Toe Board"></div>
+      <div class="footer" style="margin-top:12px;">
+        <button id="newGameBtn" class="btn">New Game</button>
+      </div>
+    </section>
+
+    <footer class="muted">Built for GitHub Pages • Dark theme • No npm needed</footer>
   </div>
 
-  <div id="board"></div>
-  <div id="status"></div>
-
   <script type="module">
+    // Firebase (CDN modules)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
 
+    // --- Replace with your project config (you already have these values) ---
     const firebaseConfig = {
       apiKey: "AIzaSyBdkS47X1SMKCQzLeuzImb76xTUq32lH1U",
       authDomain: "tic-tac-toe-501b8.firebaseapp.com",
@@ -102,109 +110,231 @@
       appId: "1:209953623684:web:b28abf53070a16e23efcd1"
     };
 
+    // Init
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const db  = getDatabase(app);
 
-    const boardDiv = document.getElementById("board");
-    const statusDiv = document.getElementById("status");
-    const roomInput = document.getElementById("roomCode");
-    const createBtn = document.getElementById("createRoom");
-    const joinBtn = document.getElementById("joinRoom");
+    // Elements
+    const boardEl   = document.getElementById("board");
+    const statusEl  = document.getElementById("status");
+    const youAreEl  = document.getElementById("youAre");
+    const roomInput = document.getElementById("roomInput");
+    const createBtn = document.getElementById("createBtn");
+    const joinBtn   = document.getElementById("joinBtn");
+    const copyBtn   = document.getElementById("copyBtn");
+    const shareBtn  = document.getElementById("shareBtn");
+    const leaveBtn  = document.getElementById("leaveBtn");
+    const newGameBtn= document.getElementById("newGameBtn");
+    const roomDisplay = document.getElementById("roomDisplay");
 
-    let roomId = null;
-    let playerSymbol = null;
-    let currentTurn = "X";
-
-    // Build board UI
+    // Build board cells
     for (let i = 0; i < 9; i++) {
-      const cell = document.createElement("div");
-      cell.classList.add("cell");
-      cell.dataset.index = i;
-      cell.addEventListener("click", () => makeMove(i));
-      boardDiv.appendChild(cell);
+      const c = document.createElement("button");
+      c.className = "cell";
+      c.dataset.index = i;
+      c.setAttribute("aria-label", "Cell " + (i+1));
+      c.addEventListener("click", () => makeMove(i));
+      boardEl.appendChild(c);
     }
 
-    function updateBoardUI(board) {
-      document.querySelectorAll(".cell").forEach((cell, idx) => {
-        cell.textContent = board[idx] || "";
+    // Local identity
+    const uid = (localStorage.getItem("ttt_uid") || crypto.randomUUID());
+    localStorage.setItem("ttt_uid", uid);
+
+    // Room state
+    let roomCode = null;
+    let mySymbol = null; // "X" | "O"
+    let roomUnsub = null;
+
+    // Helpers
+    const genCode = () => Math.random().toString(36).slice(2, 7).toUpperCase(); // 5-char
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+
+    function drawBoard(board) {
+      document.querySelectorAll(".cell").forEach((el, i) => {
+        el.textContent = board[i] || "";
+        el.classList.toggle("x", board[i] === "X");
+        el.classList.toggle("o", board[i] === "O");
       });
     }
-
-    function setStatus(msg) {
-      statusDiv.textContent = msg;
+    function setStatus(text){ statusEl.textContent = text; }
+    function setYouAre(sym){ youAreEl.textContent = sym ? sym : "-"; youAreEl.className = sym === "X" ? "mono x" : sym === "O" ? "mono o" : "mono"; }
+    function setRoomDisplay(code){ roomDisplay.textContent = code ? ("Room: " + code) : "No room"; }
+    function winnerOf(b){
+      for (const [a,bx,c] of wins){ if (b[a] && b[a]===b[bx] && b[a]===b[c]) return b[a]; }
+      return b.every(v=>v) ? "Draw" : null;
     }
+    function roomRef(code){ return ref(db, "rooms/" + code); }
 
-    async function createRoom() {
-      roomId = roomInput.value || Math.random().toString(36).substring(2, 7);
-      playerSymbol = "X";
-      await set(ref(db, "rooms/" + roomId), {
-        board: Array(9).fill(""),
+    // Create Room
+    createBtn.addEventListener("click", async () => {
+      const code = (roomInput.value || genCode()).toUpperCase();
+      const room = {
+        board: ["","","","","","","","",""],
         turn: "X",
-        winner: null
-      });
-      setStatus("Room created. You are X. Waiting for opponent...");
-      listenRoom();
-    }
+        winner: null,
+        players: { X: uid, O: null },
+        createdAt: Date.now()
+      };
+      await set(roomRef(code), room);
+      enterRoom(code);
+    });
 
-    async function joinRoom() {
-      roomId = roomInput.value;
-      if (!roomId) return alert("Enter a room code!");
-      const snapshot = await get(ref(db, "rooms/" + roomId));
-      if (!snapshot.exists()) return alert("Room not found!");
+    // Join Room
+    joinBtn.addEventListener("click", async () => {
+      const code = (roomInput.value || "").trim().toUpperCase();
+      if (!code) { alert("Enter a room code"); return; }
+      const snap = await get(roomRef(code));
+      if (!snap.exists()) { alert("Room not found"); return; }
+      const data = snap.val();
+      // Decide seat
+      let seat = null;
+      if (!data.players) data.players = { X:null, O:null };
+      if (data.players.X === uid || data.players.O === uid) {
+        seat = (data.players.X === uid) ? "X" : "O";
+      } else if (!data.players.O) {
+        seat = "O";
+        await update(roomRef(code), { players: { ...data.players, O: uid } });
+      } else if (!data.players.X) {
+        seat = "X";
+        await update(roomRef(code), { players: { ...data.players, X: uid } });
+      } else {
+        alert("Room is full");
+        return;
+      }
+      enterRoom(code);
+    });
 
-      playerSymbol = "O";
-      setStatus("Joined room. You are O.");
-      listenRoom();
-    }
-
-    function makeMove(index) {
-      if (!roomId) return;
-      const cellRef = ref(db, "rooms/" + roomId);
-      get(cellRef).then(snapshot => {
-        if (!snapshot.exists()) return;
-        const data = snapshot.val();
-        if (data.winner) return;
-        if (data.turn !== playerSymbol) return;
-        if (data.board[index]) return;
-
-        data.board[index] = playerSymbol;
-        data.turn = playerSymbol === "X" ? "O" : "X";
-        data.winner = checkWinner(data.board);
-        set(cellRef, data);
-      });
-    }
-
-    function listenRoom() {
-      const roomRef = ref(db, "rooms/" + roomId);
-      onValue(roomRef, snapshot => {
-        if (!snapshot.exists()) return;
-        const data = snapshot.val();
-        updateBoardUI(data.board);
+    // Enter room: start listener, decide my symbol
+    function enterRoom(code){
+      // Cleanup previous listener
+      if (roomUnsub) { roomUnsub(); roomUnsub = null; }
+      roomCode = code;
+      setRoomDisplay(code);
+      // Listen
+      roomUnsub = onValue(roomRef(code), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.val();
+        drawBoard(data.board || Array(9).fill(""));
+        // Decide my symbol by mapping
+        const players = data.players || {X:null,O:null};
+        mySymbol = (players.X === uid) ? "X" : (players.O === uid) ? "O" : null;
+        setYouAre(mySymbol);
+        // Status
         if (data.winner) {
-          setStatus(data.winner === "Draw" ? "It's a Draw!" : `${data.winner} Wins!`);
+          setStatus(data.winner === "Draw" ? "It's a Draw!" : (data.winner + " wins!"));
+        } else if (!players.X || !players.O) {
+          setStatus(`Waiting for ${!players.X ? "X" : "O"} to join...`);
         } else {
           setStatus(`Turn: ${data.turn}`);
         }
+        // Autofill input with current room
+        roomInput.value = code;
+      });
+      // Update URL with ?room=CODE
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", code);
+      history.replaceState(null, "", url.toString());
+    }
+
+    // Make a move
+    async function makeMove(i){
+      if (!roomCode) return;
+      const snap = await get(roomRef(roomCode));
+      if (!snap.exists()) return;
+      const data = snap.val();
+      const board = data.board || Array(9).fill("");
+      if (data.winner) return;                         // game over
+      if (!mySymbol) return;                           // not seated
+      if (data.turn !== mySymbol) return;              // not your turn
+      if (board[i]) return;                            // occupied
+
+      board[i] = mySymbol;
+      const winner = winnerOf(board);
+      const nextTurn = mySymbol === "X" ? "O" : "X";
+      await update(roomRef(roomCode), {
+        board,
+        turn: winner ? data.turn : nextTurn, // lock turn when game over
+        winner: winner
       });
     }
 
-    function checkWinner(b) {
-      const wins = [
-        [0,1,2],[3,4,5],[6,7,8],
-        [0,3,6],[1,4,7],[2,5,8],
-        [0,4,8],[2,4,6]
-      ];
-      for (const [a,bIdx,c] of wins) {
-        if (b[a] && b[a] === b[bIdx] && b[a] === b[c]) {
-          return b[a];
-        }
-      }
-      if (b.every(cell => cell)) return "Draw";
-      return null;
-    }
+    // New Game (reset board)
+    newGameBtn.addEventListener("click", async () => {
+      if (!roomCode) return;
+      await update(roomRef(roomCode), {
+        board: ["","","","","","","","",""],
+        turn: "X",
+        winner: null
+      });
+    });
 
-    createBtn.addEventListener("click", createRoom);
-    joinBtn.addEventListener("click", joinRoom);
+    // Copy & Share
+    copyBtn.addEventListener("click", async () => {
+      if (!roomCode) { alert("No room yet"); return; }
+      await navigator.clipboard.writeText(roomCode);
+      copyBtn.textContent = "Copied!";
+      setTimeout(()=>copyBtn.textContent="Copy Code", 900);
+    });
+    shareBtn.addEventListener("click", async () => {
+      if (!roomCode) { alert("No room yet"); return; }
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", roomCode);
+      const shareText = `Join my Tic Tac Toe room: ${roomCode}\n${url.toString()}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: "Tic Tac Toe Room", text: shareText, url: url.toString() });
+        } else {
+          await navigator.clipboard.writeText(shareText);
+          alert("Share link copied to clipboard!");
+        }
+      } catch {}
+    });
+
+    // Leave room
+    leaveBtn.addEventListener("click", async () => {
+      if (!roomCode) return;
+      // Try to free your seat (optional cleanup; DB is open in test mode)
+      const snap = await get(roomRef(roomCode));
+      if (snap.exists()) {
+        const data = snap.val();
+        const players = data.players || {X:null,O:null};
+        if (players.X === uid) players.X = null;
+        if (players.O === uid) players.O = null;
+        await update(roomRef(roomCode), { players });
+      }
+      if (roomUnsub) { roomUnsub(); roomUnsub = null; }
+      roomCode = null; mySymbol = null;
+      setYouAre(null); setStatus("Create or join a room"); setRoomDisplay(null);
+      drawBoard(["","","","","","","","",""]);
+      // Remove ?room from URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("room");
+      history.replaceState(null, "", url.toString());
+    });
+
+    // Auto-join if URL has ?room=CODE
+    (async function autoJoinFromURL(){
+      const params = new URLSearchParams(location.search);
+      const code = (params.get("room") || "").toUpperCase();
+      if (!code) return;
+      roomInput.value = code;
+      // Try to join as O if available, else X, else just enter as spectator (no seat)
+      const snap = await get(roomRef(code));
+      if (!snap.exists()) { setStatus("Room not found. Create one."); return; }
+      const data = snap.val();
+      const players = data.players || {X:null,O:null};
+      if (players.X === uid || players.O === uid) {
+        enterRoom(code);
+        return;
+      }
+      if (!players.O) {
+        await update(roomRef(code), { players: { ...players, O: uid } });
+      } else if (!players.X) {
+        await update(roomRef(code), { players: { ...players, X: uid } });
+      }
+      enterRoom(code);
+    })();
   </script>
 </body>
 </html>
