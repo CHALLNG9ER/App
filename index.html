@@ -1,340 +1,394 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tic Tac Toe — Multiplayer</title>
-  <style>
-    :root {
-      --bg:#0f1115; --card:#151822; --muted:#9aa4b2; --pri:#6c8cff; --pri-2:#8ea3ff; --accent:#00d0b3; --danger:#ff6b6b;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; background: radial-gradient(1200px 800px at 70% -10%, #1a1f2b 0%, var(--bg) 45%);
-      color: #e9eef7; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-      display: grid; place-items: center; padding: 20px;
-    }
-    .app { width: 100%; max-width: 700px; display: grid; gap: 16px; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-    h1 { font-size: clamp(20px, 4vw, 28px); margin: 0; letter-spacing: .3px; }
-    .badge { font-size: 12px; color: var(--accent); background: #0b1614; border:1px solid #153a35; padding:6px 10px; border-radius: 999px; }
-    .card { background: linear-gradient(180deg, #181c28 0%, var(--card) 100%); border:1px solid #23293a; border-radius: 16px; padding: 14px; }
-    .controls { display:grid; gap: 10px; }
-    .row { display:flex; flex-wrap: wrap; gap: 8px; }
-    input[type="text"] {
-      flex:1 1 160px; background:#0f1422; color:#eaf1ff; border:1px solid #2b3754; outline:none;
-      padding: 10px 12px; border-radius: 10px; min-width: 0;
-    }
-    .btn {
-      background: var(--pri); color: white; border: 1px solid #4159d9; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 600;
-      transition: transform .06s ease, background .2s ease, box-shadow .2s ease;
-    }
-    .btn:hover { background: var(--pri-2); }
-    .btn:active { transform: translateY(1px); }
-    .btn.ghost { background: #0f1422; color:#d6def8; border:1px solid #2b3754; }
-    .btn.warn { background: #2a1518; border-color:#5e2027; color:#ffc6c6; }
-    .grid {
-      display:grid; grid-template-columns: repeat(3, minmax(86px, 1fr)); gap: 10px; justify-items: stretch;
-    }
-    .cell {
-      aspect-ratio: 1/1; background: #0e1320; border:1px solid #27314a; border-radius: 16px;
-      display:grid; place-items:center; font-size: clamp(36px, 9vw, 56px); font-weight: 800; cursor: pointer;
-      user-select: none; transition: background .2s ease, transform .06s ease, border-color .2s ease;
-    }
-    .cell:hover { background:#121a2e; border-color:#314065; }
-    .cell:active { transform: translateY(1px); }
-    .hud { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; color:var(--muted); }
-    .status { font-weight:700; color:#eaf1ff; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
-    .roomline { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-    .pill {
-      background:#0d1220; border:1px solid #2b3754; padding:8px 10px; border-radius:999px; color:#cfe0ff;
-    }
-    .x { color:#7dcfff; text-shadow:0 0 10px rgba(125,207,255,.2); }
-    .o { color:#a6e3a1; text-shadow:0 0 10px rgba(166,227,161,.2); }
-    .footer { display:flex; gap:8px; flex-wrap:wrap; }
-    .muted { color: var(--muted); font-size: 12px; }
-    @media (min-width:640px){ .grid{ grid-template-columns: repeat(3, minmax(120px, 1fr)); } }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🌐 Global Chat</title>
+<style>
+  :root {
+    --bg: #1e1e2f;
+    --panel: #2a2a3f;
+    --card: #2f2f4b;
+    --text: #ffffff;
+    --muted: #b9bed1;
+    --accent: #4a90e2;
+    --accent-hover: #357ab8;
+    --warn: #ffb703;
+    --warn-hover: #e09c04;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; height: 100vh; display: flex; flex-direction: column;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  #header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem; background: var(--panel);
+    border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  }
+  #header h2 { margin: 0; font-weight: 700; }
+  #profileBtn {
+    padding: .55rem .9rem; border: 0; border-radius: 10px; cursor: pointer;
+    background: var(--warn); color: #000; font-weight: 700;
+  }
+  #profileBtn:hover { background: var(--warn-hover); }
+
+  #messages {
+    flex: 1; overflow-y: auto; padding: 1rem;
+    display: flex; flex-direction: column; gap: .6rem;
+  }
+  .msg {
+    display: flex; align-items: flex-start; gap: .6rem;
+    background: var(--card); border-radius: 14px; padding: .6rem .75rem;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: grid; place-items: center; flex-shrink: 0;
+    background: #4b4f6a; color: #fff; font-weight: 800; font-size: .85rem;
+  }
+  .mine .avatar { background: var(--accent); }
+  .msgContent { flex: 1; min-width: 0; }
+  .meta {
+    font-size: .75rem; color: var(--muted);
+    display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
+    margin-bottom: .25rem;
+  }
+  .meta .spacer { margin: 0 .25rem; opacity: .5; }
+  .actions {
+    display: inline-flex; gap: .25rem; margin-left: .25rem;
+  }
+  .actions button {
+    border: 0; border-radius: 6px; padding: 2px 6px; cursor: pointer;
+    background: #50546e; color: #fff; font-size: .7rem;
+  }
+  .actions button:hover { filter: brightness(1.1); }
+
+  .text {
+    white-space: pre-wrap; word-break: break-word; font-size: .95rem;
+  }
+  .editInput {
+    width: 100%; padding: .4rem .55rem; border-radius: 8px; border: 0;
+    outline: none; background: #1f1f30; color: #fff; font-size: .95rem;
+  }
+
+  #typing {
+    font-size: .8rem; color: #aaa; padding: 0 .9rem .25rem .9rem;
+  }
+
+  #inputArea {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .6rem; border-top: 1px solid #3a3a52; background: var(--panel);
+    border-top-left-radius: 12px; border-top-right-radius: 12px;
+    box-shadow: 0 -2px 6px rgba(0,0,0,.25);
+  }
+  #msgInput {
+    flex: 1; min-height: 42px; max-height: 160px; resize: none;
+    padding: .6rem .75rem; border-radius: 12px; border: 0; outline: none;
+    background: #1f1f30; color: #fff; line-height: 1.35; font-size: .95rem;
+  }
+  #sendBtn {
+    padding: .6rem 1.1rem; border: 0; border-radius: 12px; cursor: pointer;
+    background: var(--accent); color: #fff; font-weight: 700;
+  }
+  #sendBtn:hover { background: var(--accent-hover); }
+
+  /* Profile modal */
+  #profileModal {
+    position: fixed; inset: 0; display: none; place-items: center;
+    background: rgba(0,0,0,.55); padding: 1rem;
+  }
+  #profileCard {
+    background: var(--panel); border-radius: 12px; padding: 1rem 1.1rem; width: 100%; max-width: 360px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  }
+  #profileCard h3 { margin: 0 0 .75rem 0; }
+  .field {
+    display: grid; gap: .35rem; margin-bottom: .8rem;
+  }
+  .field input {
+    padding: .55rem .7rem; border-radius: 10px; border: 0; outline: none;
+    background: #1f1f30; color: #fff; font-size: .95rem;
+  }
+  .row { display: flex; gap: .5rem; justify-content: flex-end; }
+  .row button {
+    padding: .5rem .8rem; border: 0; border-radius: 10px; cursor: pointer; font-weight: 700;
+  }
+  #saveUsername { background: var(--accent); color: #fff; }
+  #closeProfile { background: #4b4f6a; color: #fff; }
+
+  /* Small screens polish */
+  @media (max-width: 520px) {
+    #header h2 { font-size: 1.05rem; }
+    #sendBtn { padding: .55rem .85rem; }
+    #profileBtn { padding: .5rem .75rem; }
+  }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <h1>Multiplayer Tic Tac Toe</h1>
-      <span class="badge">Firebase Realtime</span>
-    </header>
 
-    <section class="card controls">
-      <div class="row">
-        <input id="roomInput" type="text" placeholder="Enter room code (e.g. A7K3Q)" maxlength="8" />
-        <button id="createBtn" class="btn">Create Room</button>
-        <button id="joinBtn" class="btn ghost">Join Room</button>
-      </div>
-
-      <div class="row roomline">
-        <span id="roomDisplay" class="pill mono">No room</span>
-        <button id="copyBtn" class="btn ghost">Copy Code</button>
-        <button id="shareBtn" class="btn ghost">Share Link</button>
-        <button id="leaveBtn" class="btn warn">Leave Room</button>
-      </div>
-      <div class="muted">Tip: Send the link to your friend. It includes the room code automatically.</div>
-    </section>
-
-    <section class="card">
-      <div class="hud">
-        <div class="status" id="status">Create or join a room</div>
-        <div class="pill">You: <span id="youAre" class="mono">-</span></div>
-      </div>
-      <div id="board" class="grid" aria-label="Tic Tac Toe Board"></div>
-      <div class="footer" style="margin-top:12px;">
-        <button id="newGameBtn" class="btn">New Game</button>
-      </div>
-    </section>
-
-    <footer class="muted">Built for GitHub Pages • Dark theme • No npm needed</footer>
+  <div id="header">
+    <h2>🌐 Global Chat</h2>
+    <button id="profileBtn">Profile</button>
   </div>
 
-  <script type="module">
-    // Firebase (CDN modules)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+  <div id="typing"></div>
+  <div id="messages" aria-live="polite"></div>
 
-    // --- Replace with your project config (you already have these values) ---
+  <div id="inputArea">
+    <textarea id="msgInput" placeholder="Type a message…" rows="1"></textarea>
+    <button id="sendBtn">Send</button>
+  </div>
+
+  <!-- Profile Modal -->
+  <div id="profileModal">
+    <div id="profileCard">
+      <h3>Profile</h3>
+      <div class="field">
+        <label for="usernameInput">Username</label>
+        <input id="usernameInput" type="text" maxlength="24" />
+      </div>
+      <div class="row">
+        <button id="closeProfile">Cancel</button>
+        <button id="saveUsername">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase + App -->
+  <script type="module">
+    /* Firebase SDKs */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import {
+      getDatabase, ref, push, onValue, update, set, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+    /* Your Firebase project config */
     const firebaseConfig = {
-      apiKey: "AIzaSyBdkS47X1SMKCQzLeuzImb76xTUq32lH1U",
-      authDomain: "tic-tac-toe-501b8.firebaseapp.com",
-      databaseURL: "https://tic-tac-toe-501b8-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "tic-tac-toe-501b8",
-      storageBucket: "tic-tac-toe-501b8.firebasestorage.app",
-      messagingSenderId: "209953623684",
-      appId: "1:209953623684:web:b28abf53070a16e23efcd1"
+      apiKey: "AIzaSyBjjkq13CsczarMbw-t7KQ2juTo2sS_hI0",
+      authDomain: "tic-tac-toe-14b74.firebaseapp.com",
+      databaseURL: "https://tic-tac-toe-14b74-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "tic-tac-toe-14b74",
+      storageBucket: "tic-tac-toe-14b74.firebasestorage.app",
+      messagingSenderId: "437051772100",
+      appId: "1:437051772100:web:23617dbfe45f09cd2ccd91"
     };
 
-    // Init
+    /* Initialize Firebase */
     const app = initializeApp(firebaseConfig);
     const db  = getDatabase(app);
 
-    // Elements
-    const boardEl   = document.getElementById("board");
-    const statusEl  = document.getElementById("status");
-    const youAreEl  = document.getElementById("youAre");
-    const roomInput = document.getElementById("roomInput");
-    const createBtn = document.getElementById("createBtn");
-    const joinBtn   = document.getElementById("joinBtn");
-    const copyBtn   = document.getElementById("copyBtn");
-    const shareBtn  = document.getElementById("shareBtn");
-    const leaveBtn  = document.getElementById("leaveBtn");
-    const newGameBtn= document.getElementById("newGameBtn");
-    const roomDisplay = document.getElementById("roomDisplay");
+    /* DOM */
+    const messagesEl   = document.getElementById('messages');
+    const typingEl     = document.getElementById('typing');
+    const msgInput     = document.getElementById('msgInput');
+    const sendBtn      = document.getElementById('sendBtn');
+    const profileBtn   = document.getElementById('profileBtn');
+    const profileModal = document.getElementById('profileModal');
+    const usernameIn   = document.getElementById('usernameInput');
+    const saveUsername = document.getElementById('saveUsername');
+    const closeProfile = document.getElementById('closeProfile');
 
-    // Build board cells
-    for (let i = 0; i < 9; i++) {
-      const c = document.createElement("button");
-      c.className = "cell";
-      c.dataset.index = i;
-      c.setAttribute("aria-label", "Cell " + (i+1));
-      c.addEventListener("click", () => makeMove(i));
-      boardEl.appendChild(c);
+    /* Identity */
+    let username = localStorage.getItem('gc_username') || `User-${Math.random().toString(36).slice(2,6)}`;
+    localStorage.setItem('gc_username', username);
+    profileBtn.textContent = `Profile (${username})`;
+
+    /* Refs */
+    const messagesRef = ref(db, 'messages');
+    const typingRef   = ref(db, 'typing');
+
+    /* Helpers */
+    function timeStr(ts) {
+      if (!ts) return '';
+      const d = new Date(ts);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
-    // Local identity
-    const uid = (localStorage.getItem("ttt_uid") || crypto.randomUUID());
-    localStorage.setItem("ttt_uid", uid);
+    function autoGrow(el) {
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight) + 'px';
+    }
 
-    // Room state
-    let roomCode = null;
-    let mySymbol = null; // "X" | "O"
-    let roomUnsub = null;
-
-    // Helpers
-    const genCode = () => Math.random().toString(36).slice(2, 7).toUpperCase(); // 5-char
-    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-
-    function drawBoard(board) {
-      document.querySelectorAll(".cell").forEach((el, i) => {
-        el.textContent = board[i] || "";
-        el.classList.toggle("x", board[i] === "X");
-        el.classList.toggle("o", board[i] === "O");
+    /* Send message */
+    async function sendMessage() {
+      const text = msgInput.value.trim();
+      if (!text) return;
+      await push(messagesRef, {
+        user: username,
+        text,
+        ts: serverTimestamp()
       });
+      msgInput.value = '';
+      autoGrow(msgInput);
     }
-    function setStatus(text){ statusEl.textContent = text; }
-    function setYouAre(sym){ youAreEl.textContent = sym ? sym : "-"; youAreEl.className = sym === "X" ? "mono x" : sym === "O" ? "mono o" : "mono"; }
-    function setRoomDisplay(code){ roomDisplay.textContent = code ? ("Room: " + code) : "No room"; }
-    function winnerOf(b){
-      for (const [a,bx,c] of wins){ if (b[a] && b[a]===b[bx] && b[a]===b[c]) return b[a]; }
-      return b.every(v=>v) ? "Draw" : null;
-    }
-    function roomRef(code){ return ref(db, "rooms/" + code); }
 
-    // Create Room
-    createBtn.addEventListener("click", async () => {
-      const code = (roomInput.value || genCode()).toUpperCase();
-      const room = {
-        board: ["","","","","","","","",""],
-        turn: "X",
-        winner: null,
-        players: { X: uid, O: null },
-        createdAt: Date.now()
+    /* Inline edit */
+    function beginEdit(key, currentText, container, textDiv) {
+      const input = document.createElement('textarea');
+      input.className = 'editInput';
+      input.value = currentText;
+      input.rows = Math.min(6, Math.max(1, currentText.split('\n').length));
+      container.replaceChild(input, textDiv);
+      input.focus();
+      input.select();
+
+      const commit = async () => {
+        const newText = input.value.trim();
+        await update(ref(db, 'messages/' + key), { text: newText });
       };
-      await set(roomRef(code), room);
-      enterRoom(code);
-    });
+      const cancel = () => {
+        container.replaceChild(textDiv, input);
+      };
 
-    // Join Room
-    joinBtn.addEventListener("click", async () => {
-      const code = (roomInput.value || "").trim().toUpperCase();
-      if (!code) { alert("Enter a room code"); return; }
-      const snap = await get(roomRef(code));
-      if (!snap.exists()) { alert("Room not found"); return; }
-      const data = snap.val();
-      // Decide seat
-      let seat = null;
-      if (!data.players) data.players = { X:null, O:null };
-      if (data.players.X === uid || data.players.O === uid) {
-        seat = (data.players.X === uid) ? "X" : "O";
-      } else if (!data.players.O) {
-        seat = "O";
-        await update(roomRef(code), { players: { ...data.players, O: uid } });
-      } else if (!data.players.X) {
-        seat = "X";
-        await update(roomRef(code), { players: { ...data.players, X: uid } });
-      } else {
-        alert("Room is full");
-        return;
-      }
-      enterRoom(code);
-    });
-
-    // Enter room: start listener, decide my symbol
-    function enterRoom(code){
-      // Cleanup previous listener
-      if (roomUnsub) { roomUnsub(); roomUnsub = null; }
-      roomCode = code;
-      setRoomDisplay(code);
-      // Listen
-      roomUnsub = onValue(roomRef(code), (snap) => {
-        if (!snap.exists()) return;
-        const data = snap.val();
-        drawBoard(data.board || Array(9).fill(""));
-        // Decide my symbol by mapping
-        const players = data.players || {X:null,O:null};
-        mySymbol = (players.X === uid) ? "X" : (players.O === uid) ? "O" : null;
-        setYouAre(mySymbol);
-        // Status
-        if (data.winner) {
-          setStatus(data.winner === "Draw" ? "It's a Draw!" : (data.winner + " wins!"));
-        } else if (!players.X || !players.O) {
-          setStatus(`Waiting for ${!players.X ? "X" : "O"} to join...`);
-        } else {
-          setStatus(`Turn: ${data.turn}`);
+      input.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' && !e.shiftKey)) {
+          e.preventDefault();
+          commit();
+        } else if (e.key === 'Escape') {
+          cancel();
         }
-        // Autofill input with current room
-        roomInput.value = code;
       });
-      // Update URL with ?room=CODE
-      const url = new URL(window.location.href);
-      url.searchParams.set("room", code);
-      history.replaceState(null, "", url.toString());
+      input.addEventListener('blur', commit);
     }
 
-    // Make a move
-    async function makeMove(i){
-      if (!roomCode) return;
-      const snap = await get(roomRef(roomCode));
-      if (!snap.exists()) return;
-      const data = snap.val();
-      const board = data.board || Array(9).fill("");
-      if (data.winner) return;                         // game over
-      if (!mySymbol) return;                           // not seated
-      if (data.turn !== mySymbol) return;              // not your turn
-      if (board[i]) return;                            // occupied
-
-      board[i] = mySymbol;
-      const winner = winnerOf(board);
-      const nextTurn = mySymbol === "X" ? "O" : "X";
-      await update(roomRef(roomCode), {
-        board,
-        turn: winner ? data.turn : nextTurn, // lock turn when game over
-        winner: winner
-      });
+    /* Delete message */
+    async function deleteMessage(key) {
+      if (!confirm('Delete this message?')) return;
+      await set(ref(db, 'messages/' + key), null);
     }
 
-    // New Game (reset board)
-    newGameBtn.addEventListener("click", async () => {
-      if (!roomCode) return;
-      await update(roomRef(roomCode), {
-        board: ["","","","","","","","",""],
-        turn: "X",
-        winner: null
-      });
+    /* Typing indicator:
+       - Write a "last typed" timestamp under /typing/<username>
+       - Show others typing if their timestamp within last 5 seconds */
+    function touchTyping() {
+      // Use local clock for comparison consistency
+      set(ref(db, 'typing/' + username), Date.now());
+    }
+
+    /* Events: send & input */
+    sendBtn.addEventListener('click', sendMessage);
+    msgInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    msgInput.addEventListener('input', () => {
+      autoGrow(msgInput);
+      touchTyping();
     });
 
-    // Copy & Share
-    copyBtn.addEventListener("click", async () => {
-      if (!roomCode) { alert("No room yet"); return; }
-      await navigator.clipboard.writeText(roomCode);
-      copyBtn.textContent = "Copied!";
-      setTimeout(()=>copyBtn.textContent="Copy Code", 900);
+    /* Profile */
+    profileBtn.addEventListener('click', () => {
+      usernameIn.value = username;
+      profileModal.style.display = 'grid';
+      usernameIn.focus();
+      usernameIn.select();
     });
-    shareBtn.addEventListener("click", async () => {
-      if (!roomCode) { alert("No room yet"); return; }
-      const url = new URL(window.location.href);
-      url.searchParams.set("room", roomCode);
-      const shareText = `Join my Tic Tac Toe room: ${roomCode}\n${url.toString()}`;
-      try {
-        if (navigator.share) {
-          await navigator.share({ title: "Tic Tac Toe Room", text: shareText, url: url.toString() });
-        } else {
-          await navigator.clipboard.writeText(shareText);
-          alert("Share link copied to clipboard!");
+    closeProfile.addEventListener('click', () => {
+      profileModal.style.display = 'none';
+    });
+    saveUsername.addEventListener('click', () => {
+      const v = usernameIn.value.trim();
+      if (!v) return;
+      username = v;
+      localStorage.setItem('gc_username', username);
+      profileBtn.textContent = `Profile (${username})`;
+      profileModal.style.display = 'none';
+    });
+    // Close modal on backdrop click
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) profileModal.style.display = 'none';
+    });
+
+    /* Listen typing */
+    onValue(typingRef, (snap) => {
+      const data = snap.val() || {};
+      const now = Date.now();
+      const others = Object.entries(data)
+        .filter(([name, t]) => name !== username && typeof t === 'number' && (now - t) < 5000)
+        .map(([name]) => name);
+      typingEl.textContent = others.length ? `${others.join(', ')} ${others.length > 1 ? 'are' : 'is'} typing…` : '';
+    });
+
+    /* Listen messages */
+    onValue(messagesRef, async (snap) => {
+      const raw = snap.val() || {};
+      let entries = Object.entries(raw)
+        .map(([k, v]) => ({ key: k, ...v }))
+        // When using serverTimestamp, ts arrives as a number later; fallback sort by key if missing
+        .sort((a, b) => (a.ts || 0) - (b.ts || 0) || a.key.localeCompare(b.key));
+
+      // Trim: if >= 50, delete oldest so only last 10 remain
+      if (entries.length >= 50) {
+        const toDelete = entries.slice(0, entries.length - 10);
+        // fire-and-forget deletions
+        toDelete.forEach(({ key }) => set(ref(db, 'messages/' + key), null));
+        entries = entries.slice(-10);
+      }
+
+      // Render
+      messagesEl.innerHTML = '';
+      entries.forEach((m) => {
+        const mine = m.user === username;
+
+        const row = document.createElement('div');
+        row.className = 'msg' + (mine ? ' mine' : '');
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.textContent = (m.user || '?').slice(0, 2).toUpperCase();
+
+        const content = document.createElement('div');
+        content.className = 'msgContent';
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = m.user || 'Unknown';
+        const timeSpan = document.createElement('span');
+        timeSpan.textContent = timeStr(m.ts);
+        const dot = document.createElement('span');
+        dot.className = 'spacer';
+        dot.textContent = '•';
+        meta.appendChild(nameSpan);
+        meta.appendChild(dot);
+        meta.appendChild(timeSpan);
+
+        if (mine) {
+          const actions = document.createElement('span');
+          actions.className = 'actions';
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit';
+          editBtn.addEventListener('click', () => beginEdit(m.key, m.text || '', content, textDiv));
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.addEventListener('click', () => deleteMessage(m.key));
+          actions.appendChild(editBtn);
+          actions.appendChild(delBtn);
+          meta.appendChild(actions);
         }
-      } catch {}
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'text';
+        textDiv.textContent = m.text || '';
+
+        content.appendChild(meta);
+        content.appendChild(textDiv);
+
+        row.appendChild(avatar);
+        row.appendChild(content);
+        messagesEl.appendChild(row);
+      });
+
+      // Scroll to bottom
+      messagesEl.scrollTop = messagesEl.scrollHeight;
     });
 
-    // Leave room
-    leaveBtn.addEventListener("click", async () => {
-      if (!roomCode) return;
-      // Try to free your seat (optional cleanup; DB is open in test mode)
-      const snap = await get(roomRef(roomCode));
-      if (snap.exists()) {
-        const data = snap.val();
-        const players = data.players || {X:null,O:null};
-        if (players.X === uid) players.X = null;
-        if (players.O === uid) players.O = null;
-        await update(roomRef(roomCode), { players });
-      }
-      if (roomUnsub) { roomUnsub(); roomUnsub = null; }
-      roomCode = null; mySymbol = null;
-      setYouAre(null); setStatus("Create or join a room"); setRoomDisplay(null);
-      drawBoard(["","","","","","","","",""]);
-      // Remove ?room from URL
-      const url = new URL(window.location.href);
-      url.searchParams.delete("room");
-      history.replaceState(null, "", url.toString());
-    });
-
-    // Auto-join if URL has ?room=CODE
-    (async function autoJoinFromURL(){
-      const params = new URLSearchParams(location.search);
-      const code = (params.get("room") || "").toUpperCase();
-      if (!code) return;
-      roomInput.value = code;
-      // Try to join as O if available, else X, else just enter as spectator (no seat)
-      const snap = await get(roomRef(code));
-      if (!snap.exists()) { setStatus("Room not found. Create one."); return; }
-      const data = snap.val();
-      const players = data.players || {X:null,O:null};
-      if (players.X === uid || players.O === uid) {
-        enterRoom(code);
-        return;
-      }
-      if (!players.O) {
-        await update(roomRef(code), { players: { ...players, O: uid } });
-      } else if (!players.X) {
-        await update(roomRef(code), { players: { ...players, X: uid } });
-      }
-      enterRoom(code);
-    })();
+    // Initialize textarea height once
+    autoGrow(msgInput);
   </script>
 </body>
 </html>
